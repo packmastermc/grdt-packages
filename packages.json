@@ -1,0 +1,12 @@
+{
+    "packages": [
+        {
+            "name": "7zip",
+            "url": "https://raw.githubusercontent.com/packmastermc/grdt-packages/refs/heads/master/7zip.tar.xz"
+        },
+        {
+            "name": "another-file",
+            "url": "https://example.com/file2.tar.gz"
+        }
+    ]
+}
