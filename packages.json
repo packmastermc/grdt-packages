@@ -1,0 +1,18 @@
+{
+    "packages": [
+        {
+            "name": "7zip",
+            "urls": {
+                "win": "https://raw.githubusercontent.com/packmastermc/grdt-repo-1/refs/heads/master/7zip-win-amd64.tar.xz",
+                "mac": "https://7-zip.org/a/7z2408-mac.tar.xz",
+                "linux": "https://7-zip.org/a/7z2408-linux-x64.tar.xz"
+            }
+        },
+        {
+            "name": "wget",
+            "urls": {
+                "linux":"https://ftp.gnu.org/gnu/wget/wget2-latest.tar.gz"
+            }
+        }
+    ]
+}

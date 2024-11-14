@@ -1,0 +1,87 @@
+import json
+import urllib.request
+import tarfile
+import os
+import sys
+
+# start config
+platform_arch_default = "linux"
+remove_cache_after_installation = True
+# end config
+
+platform_arch = None
+for flag in ["win", "linux", "debian", "fedora", "arch", "gentoo", "bsd", "android", "intelmac", "mac", "linux-riscv", "bsd-riscv", "linux-arm", "src"]:
+    if f"--{flag}" in sys.argv:
+        platform_arch = flag
+        break
+
+if not platform_arch:
+    platform_arch=platform_arch_default
+    print("Using default build | " + platform_arch_default)
+
+# adding a -c to the installation parameters will autoremove the unextracted package after it is installed
+clear_cache = "-c" in sys.argv
+
+if len(sys.argv) > 1:
+    package_name = sys.argv[1]
+else:
+    package_name = input("Enter the package name: ")
+
+with open("packages.json") as f:
+    data = json.load(f)
+
+found = False
+for package in data.get("packages", []):
+    if package.get("name") == package_name:
+        if platform_arch in package.get("urls", {}):
+            download_url = package["urls"][platform_arch]
+            security = "secured / https" if "https" in download_url else "http"
+            print(f"Downloading {package_name} for {platform_arch}: {download_url} | {security}")
+            
+            tmp_folder = "packages/tmp"
+            install_folder = f"packages/{package_name}"
+            
+            os.makedirs(tmp_folder, exist_ok=True)
+            os.makedirs(install_folder, exist_ok=True)
+            
+            download_path = f"{tmp_folder}/{package_name}.tar"
+            
+            # Determine the compression format
+            if ".tar.xz" in download_url:
+                download_path += ".xz"
+            elif ".tar.gz" in download_url:
+                download_path += ".gz"
+
+            try:
+                urllib.request.urlretrieve(download_url, download_path)
+                print("Package retrieval successful.")
+            except Exception as e:
+                print(f"The package download source is unreachable, perhaps no internet connection or a firewall is active? Error: {e}")
+            
+            # Extract based on file type
+            try:
+                if download_path.endswith(".tar.xz"):
+                    with tarfile.open(download_path, 'r:xz') as tar:
+                        tar.extractall(path=install_folder)
+                        print(f"Extracted {package_name} into {install_folder}")
+                elif download_path.endswith(".tar.gz"):
+                    with tarfile.open(download_path, 'r:gz') as tar:
+                        tar.extractall(path=install_folder)
+                        print(f"Extracted {package_name} into {install_folder}")
+            except Exception as e:
+                print(f"The package extraction process failed. Error: {e}")
+            
+            if remove_cache_after_installation == True:
+                os.remove(download_path)
+                print("Package cache has been cleared after the installation.")
+            elif clear_cache == True:
+                os.remove(download_path)
+            else:
+                print("Package cache located at " + download_path)
+            found = True
+        else:
+            print(f"Platform/architecture combination '{platform_arch}' not available for package '{package_name}'.")
+        break
+
+if not found:
+    print(f"Package named '{package_name}' not found.")
